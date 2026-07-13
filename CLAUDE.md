@@ -29,6 +29,7 @@ The joke is the marketing: the site speaks in the deadpan register of a genuine 
 - `@supabase/supabase-js` v2 with `@supabase/ssr` for server/client split.
 - Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only, never in client bundles), `CRON_SECRET`.
 - Schema lives in `supabase/migrations/`; never change schema outside a migration.
+- `supabase db query` against the remote returns 403 "insufficient privileges" from the management API (observed July 2026). This is platform-side, not a credentials fault. `supabase db push` works. For ad-hoc reads, use the REST API with the service key, or the dashboard SQL Editor.
 
 ## Free-tier constraints (treat as invariants)
 
