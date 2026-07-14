@@ -1,24 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OM-Eat
 
-## Getting Started
+Ops Manual E(at). A small reference site where BA Euroflyer crew at London
+Gatwick record what to eat at each destination during a turnaround. A curated
+guide fed by a submission queue — not a feed, not a social network.
 
-First, run the development server:
+Everything is public to read. Anyone can submit a new Find (one specific
+thing to eat, at one specific place, at one destination — optionally with
+photos) or a correction; nothing appears on the site until one of the two
+curators publishes it from `/admin`. Crew can one-tap **Confirm** a Find to
+signal its information is still correct.
+
+See [CLAUDE.md](CLAUDE.md) for the full project rules (glossary, trust
+model, free-tier constraints, and what is permanently out of scope).
+
+## Stack
+
+- [Next.js](https://nextjs.org) (App Router, TypeScript, Tailwind), deployed
+  on Vercel Hobby
+- [Supabase](https://supabase.com) free tier: Postgres, Auth (curators
+  only), Storage for Find photos
+- No paid APIs, no maps API, no analytics beyond Vercel defaults
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000). You will need the
+environment variables below in `.env.local`.
 
 ## Environment variables
 
@@ -27,19 +38,25 @@ Required in the Vercel project (and `.env.local` for local development):
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` — server only, never exposed to the client
-- `CRON_SECRET` — required; authorises the daily `/api/cron/keepalive` Vercel cron that keeps the Supabase free-tier project from pausing
+- `CRON_SECRET` — required; authorises the daily `/api/cron/keepalive`
+  Vercel cron that keeps the Supabase free-tier project from pausing
 
-## Learn More
+## Database and storage
 
-To learn more about Next.js, take a look at the following resources:
+- Schema lives in `supabase/migrations/` and is applied with
+  `supabase db push`. Never change schema outside a migration.
+- Photos live in the Supabase Storage bucket **`Find-images`** (capital F —
+  the bucket was created with this name and the code targets it via
+  `FIND_IMAGES_BUCKET` in `lib/images.ts`). Public read, 1 MB per object;
+  the client compresses images before upload.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Admin
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`/admin` is unlinked from the public site and auth-walled. The two curator
+accounts are created manually in Supabase; public sign-up is disabled. The
+queue is at `/admin`, published Finds are managed at `/admin/finds`.
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pushing to `main` deploys to production via Vercel. Database migrations are
+applied separately with `supabase db push`.
