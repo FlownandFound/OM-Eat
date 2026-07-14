@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { CURRENCY_CODES } from "@/lib/currencies";
+import { FIND_IMAGES_BUCKET } from "@/lib/images";
 
 // Public submission intake for new Finds and corrections. Open but
 // moderated: everything lands in the submissions queue as 'pending' and
@@ -60,8 +62,8 @@ export async function POST(request: Request) {
   }
 
   const costCurrency = text(body.cost_currency, 3)?.toUpperCase() ?? null;
-  if (costCurrency !== null && !/^[A-Z]{3}$/.test(costCurrency)) {
-    return invalid("Currency must be a three-letter code.");
+  if (costCurrency !== null && !CURRENCY_CODES.includes(costCurrency)) {
+    return invalid("Currency must be picked from the list.");
   }
 
   const payment = text(body.payment, 10);
@@ -112,7 +114,36 @@ export async function POST(request: Request) {
       return invalid("Unknown destination.");
     }
 
+    // Photos: compressed client-side, capped again here (the bucket also
+    // enforces 1 MB). They land in an unlisted submissions/ path and are only
+    // linked to a Find if a curator publishes.
+    const imagePaths: string[] = [];
+    const images = Array.isArray(body.images) ? body.images.slice(0, 3) : [];
+    for (const image of images) {
+      const match =
+        typeof image === "string"
+          ? image.match(/^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/)
+          : null;
+      if (!match) return invalid("Photos must be attached via the form.");
+      const bytes = Buffer.from(match[1], "base64");
+      if (bytes.length > 1024 * 1024) {
+        return invalid("Each photo must be under 1 MB.");
+      }
+      const path = `submissions/${crypto.randomUUID()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from(FIND_IMAGES_BUCKET)
+        .upload(path, bytes, { contentType: "image/jpeg" });
+      if (uploadError) {
+        return NextResponse.json(
+          { error: "Photo upload failed. Try again." },
+          { status: 500 },
+        );
+      }
+      imagePaths.push(path);
+    }
+
     payload = { destination_id: destination.id, ...fields };
+    if (imagePaths.length > 0) payload.image_paths = imagePaths;
   } else {
     const correction = text(body.body, 2000);
     if (!correction) {

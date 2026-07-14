@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
 import { AirsideBadge } from "@/app/finds/airside-badge";
+import { countryFlag } from "@/lib/flags";
 
 export const revalidate = 60;
 
@@ -32,7 +33,10 @@ export default async function DestinationPage({
     <main className="mx-auto max-w-xl px-4 py-8">
       <p className="font-mono text-sm font-bold">{destination.iata}</p>
       <h1 className="text-2xl font-bold">{destination.city}</h1>
-      <p className="text-sm text-neutral-600">{destination.country}</p>
+      <p className="text-sm text-neutral-600">
+        <span aria-hidden="true">{countryFlag(destination.country)}</span>{" "}
+        {destination.country}
+      </p>
 
       {!finds?.length ? (
         <section className="mt-10 rounded border border-neutral-400 p-6 text-center">
@@ -40,7 +44,7 @@ export default async function DestinationPage({
             Nothing found here yet. Be the first.
           </p>
           <Link
-            href="/add"
+            href={`/add?destination=${slug}`}
             className="mt-4 inline-block rounded bg-black px-6 py-3 font-bold text-white"
           >
             Add a Find
@@ -68,6 +72,17 @@ export default async function DestinationPage({
           ))}
         </ul>
       )}
+
+      {finds && finds.length > 0 && (
+        <div className="mt-8">
+          <Link
+            href={`/add?destination=${slug}`}
+            className="block w-full rounded border-2 border-black px-4 py-3 text-center font-bold"
+          >
+            Add a Find at {destination.city}
+          </Link>
+        </div>
+      )}
     </main>
   );
 }
@@ -82,5 +97,5 @@ export async function generateMetadata({
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
-  return { title: `${city} — OMEat` };
+  return { title: `${city} — OM-Eat` };
 }

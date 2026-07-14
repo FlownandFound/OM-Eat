@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createAuthClient } from "@/lib/supabase/auth";
+import { createServiceClient } from "@/lib/supabase/server";
+import { FIND_IMAGES_BUCKET } from "@/lib/images";
 
 // Curator queue actions. All writes go through the curator's authenticated
 // client, so RLS (not the service key) is the authority here — an
@@ -24,6 +26,14 @@ const FIND_FIELDS = [
 ] as const;
 
 type Payload = Record<string, unknown>;
+
+// Submission photo paths, uploaded to storage by the public intake route
+// and only linked to a Find here, at publication.
+function imagePaths(payload: Payload): string[] {
+  return Array.isArray(payload.image_paths)
+    ? payload.image_paths.filter((p): p is string => typeof p === "string")
+    : [];
+}
 
 // Payload → finds row. cost_amount is stored in the payload as a string
 // (JSON survives curator edits losslessly that way); it becomes numeric
@@ -65,8 +75,27 @@ export async function publishNewFind(
   find.submitter_display = submission.submitter_display;
   find.status = "published";
 
-  const { error: insertError } = await supabase.from("finds").insert(find);
-  if (insertError) return { error: insertError.message };
+  const { data: inserted, error: insertError } = await supabase
+    .from("finds")
+    .insert(find)
+    .select("id")
+    .single();
+  if (insertError || !inserted) {
+    return { error: insertError?.message ?? "Publish failed." };
+  }
+
+  const paths = imagePaths(submission.payload);
+  if (paths.length > 0) {
+    const { error: imagesError } = await supabase.from("find_images").insert(
+      paths.map((path, index) => ({
+        find_id: inserted.id,
+        storage_path: path,
+        alt_text: String(find.dish ?? "Find photo"),
+        sort_order: index,
+      })),
+    );
+    if (imagesError) return { error: imagesError.message };
+  }
 
   const { error: statusError } = await supabase
     .from("submissions")
@@ -163,12 +192,30 @@ export async function rejectSubmission(
 ): Promise<{ error?: string }> {
   const supabase = await createAuthClient();
 
+  const { data: submission } = await supabase
+    .from("submissions")
+    .select("id, payload")
+    .eq("id", submissionId)
+    .eq("status", "pending")
+    .maybeSingle();
+  if (!submission) return { error: "Submission not found or already handled." };
+
   const { error } = await supabase
     .from("submissions")
     .update({ status: "rejected" })
-    .eq("id", submissionId)
+    .eq("id", submission.id)
     .eq("status", "pending");
   if (error) return { error: error.message };
+
+  // Rejected photos never reach a Find; remove them from storage so the
+  // 1 GB bucket only holds published or pending images. Best-effort: the
+  // rejection itself has already succeeded under RLS.
+  const paths = imagePaths(submission.payload ?? {});
+  if (paths.length > 0) {
+    await createServiceClient()
+      .storage.from(FIND_IMAGES_BUCKET)
+      .remove(paths);
+  }
 
   revalidatePath("/admin");
   return {};

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
 import { AirsideBadge } from "@/app/finds/airside-badge";
 import { ConfirmControl } from "@/app/finds/confirm-control";
+import { findImageUrl } from "@/lib/images";
 
 export const revalidate = 60;
 
@@ -24,6 +25,12 @@ export default async function FindPage({
     .maybeSingle();
 
   if (!find) notFound();
+
+  const { data: images } = await supabase
+    .from("find_images")
+    .select("id, storage_path, alt_text")
+    .eq("find_id", find.id)
+    .order("sort_order");
 
   const destination = Array.isArray(find.destinations)
     ? find.destinations[0]
@@ -86,6 +93,20 @@ export default async function FindPage({
           ))}
       </dl>
 
+      {images && images.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          {images.map((image) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={image.id}
+              src={findImageUrl(image.storage_path)}
+              alt={image.alt_text}
+              className="w-full rounded border border-neutral-300 object-cover"
+            />
+          ))}
+        </div>
+      )}
+
       {find.directions && (
         <section className="mt-6">
           <h2 className="text-sm font-bold uppercase tracking-wide">
@@ -145,6 +166,6 @@ export async function generateMetadata({
     .eq("status", "published")
     .maybeSingle();
   return {
-    title: find ? `${find.dish}, ${find.place} — OMEat` : "OMEat",
+    title: find ? `${find.dish}, ${find.place} — OM-Eat` : "OM-Eat",
   };
 }

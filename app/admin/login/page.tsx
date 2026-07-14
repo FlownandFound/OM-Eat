@@ -1,6 +1,6 @@
 import { LoginForm } from "./login-form";
 
-export const metadata = { title: "Curator access — OMEat" };
+export const metadata = { title: "Curator access — OM-Eat" };
 
 export default function AdminLoginPage() {
   return (

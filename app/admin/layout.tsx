@@ -4,7 +4,7 @@ import { SignOutButton } from "./sign-out-button";
 // The proxy guards everything under /admin, so this layout can assume a
 // curator. The login page renders inside it too; the nav is harmless there.
 
-export const metadata = { title: "Curation — OMEat" };
+export const metadata = { title: "Curation — OM-Eat" };
 
 export default function AdminLayout({
   children,
@@ -15,7 +15,7 @@ export default function AdminLayout({
     <div className="min-h-screen">
       <header className="border-b border-neutral-300">
         <nav className="mx-auto flex max-w-xl items-center gap-5 px-4 py-3 text-sm font-semibold">
-          <span className="font-mono font-bold">OMEat / curation</span>
+          <span className="font-mono font-bold">Curation</span>
           <Link href="/admin" className="underline">
             Queue
           </Link>

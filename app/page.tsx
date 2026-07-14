@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "OMEat — Ops Manual E(at)",
+  title: "OM-Eat — Ops Manual E(at)",
   description:
     "Reference guide to what to eat on a turnaround, maintained by BA Euroflyer crew at London Gatwick.",
 };
@@ -9,10 +9,19 @@ export const metadata = {
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-xl px-4 py-10">
-      <h1 className="text-3xl font-bold tracking-tight">OMEat</h1>
+      <h1 className="text-3xl font-bold tracking-tight">OM-Eat</h1>
       <p className="mt-1 text-sm font-semibold uppercase tracking-wide text-neutral-600">
         Ops Manual E(at) — Gatwick short-haul edition
       </p>
+
+      <div className="mt-8">
+        <Link
+          href="/destinations"
+          className="block w-full rounded bg-black px-4 py-4 text-center text-lg font-bold text-white"
+        >
+          Destinations
+        </Link>
+      </div>
 
       <section className="mt-8 space-y-4 text-base">
         <p>
@@ -34,18 +43,12 @@ export default function HomePage() {
         </p>
       </section>
 
-      <div className="mt-10 space-y-3">
+      <div className="mt-8">
         <Link
           href="/add"
-          className="block w-full rounded bg-black px-4 py-4 text-center text-lg font-bold text-white"
-        >
-          Add a Find
-        </Link>
-        <Link
-          href="/destinations"
           className="block w-full rounded border-2 border-black px-4 py-4 text-center text-lg font-bold"
         >
-          Destinations
+          Add a Find
         </Link>
       </div>
 

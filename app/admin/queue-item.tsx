@@ -7,6 +7,7 @@ import {
   rejectSubmission,
 } from "./actions";
 import { FindFields, readFindFields } from "./find-fields";
+import { findImageUrl } from "@/lib/images";
 
 type Submission = {
   id: string;
@@ -143,6 +144,10 @@ function NewFindReview({
   pending: boolean;
   run: (action: () => Promise<{ error?: string }>) => void;
 }) {
+  const imagePaths = Array.isArray(payload.image_paths)
+    ? payload.image_paths.filter((p): p is string => typeof p === "string")
+    : [];
+
   return (
     <form
       onSubmit={(event) => {
@@ -151,6 +156,23 @@ function NewFindReview({
         run(() => publishNewFind(submissionId, edits));
       }}
     >
+      {imagePaths.length > 0 && (
+        <div className="mb-4">
+          <p className="text-sm font-semibold">Attached photos</p>
+          <div className="mt-2 flex gap-3">
+            {imagePaths.map((path) => (
+              <a key={path} href={findImageUrl(path)} target="_blank" rel="noopener noreferrer">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={findImageUrl(path)}
+                  alt="Submitted photo"
+                  className="h-24 w-24 rounded border border-neutral-400 object-cover"
+                />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
       <FindFields values={payload} />
       <div className="mt-5 flex gap-3">
         <button

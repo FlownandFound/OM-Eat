@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { CURRENCIES } from "@/lib/currencies";
 
 const inputClass =
   "mt-1 w-full rounded border border-neutral-400 bg-white px-3 py-2 text-base";
@@ -20,6 +22,14 @@ export function UpdateForm({ findId }: { findId: string }) {
           A curator will review this report against the current record. No
           further action is required.
         </p>
+        <div className="mt-4 flex gap-4 text-sm font-semibold">
+          <Link href="/" className="underline">
+            Return to home
+          </Link>
+          <Link href="/destinations" className="underline">
+            Destinations
+          </Link>
+        </div>
       </section>
     );
   }
@@ -181,13 +191,19 @@ export function UpdateForm({ findId }: { findId: string }) {
               <label className={labelClass} htmlFor="cost_currency">
                 Currency
               </label>
-              <input
+              <select
                 id="cost_currency"
                 name="cost_currency"
-                maxLength={3}
-                autoCapitalize="characters"
+                defaultValue=""
                 className={inputClass}
-              />
+              >
+                <option value="">No change</option>
+                {CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

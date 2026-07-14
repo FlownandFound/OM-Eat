@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/public";
+import { countryFlag } from "@/lib/flags";
 
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Destinations — OMEat",
+  title: "Destinations — OM-Eat",
 };
 
 type Destination = {
@@ -43,7 +44,7 @@ export default async function DestinationsPage() {
       {[...byCountry.entries()].map(([country, group]) => (
         <section key={country} className="mt-8">
           <h2 className="border-b-2 border-black pb-1 text-sm font-bold uppercase tracking-wide">
-            {country}
+            <span aria-hidden="true">{countryFlag(country)}</span> {country}
           </h2>
           <ul>
             {group.map((d) => (

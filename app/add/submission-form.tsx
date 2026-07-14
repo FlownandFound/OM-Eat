@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { CURRENCIES } from "@/lib/currencies";
+import { PhotoInput } from "./photo-input";
 
 type Destination = {
   id: string;
@@ -15,10 +18,13 @@ const labelClass = "block text-sm font-semibold";
 
 export function SubmissionForm({
   destinations,
+  defaultDestinationId,
 }: {
   destinations: Destination[];
+  defaultDestinationId?: string;
 }) {
   const [airside, setAirside] = useState<boolean | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [logged, setLogged] = useState(false);
@@ -31,6 +37,14 @@ export function SubmissionForm({
           A curator will review this entry. If approved, it will appear on the
           destination page. No further action is required.
         </p>
+        <div className="mt-4 flex gap-4 text-sm font-semibold">
+          <Link href="/" className="underline">
+            Return to home
+          </Link>
+          <Link href="/destinations" className="underline">
+            Destinations
+          </Link>
+        </div>
       </section>
     );
   }
@@ -67,6 +81,7 @@ export function SubmissionForm({
           directions: value("directions"),
           maps_url: value("maps_url"),
           submitter_display: value("submitter_display"),
+          images: photos,
         }),
       });
 
@@ -106,7 +121,7 @@ export function SubmissionForm({
           id="destination_id"
           name="destination_id"
           required
-          defaultValue=""
+          defaultValue={defaultDestinationId ?? ""}
           className={inputClass}
         >
           <option value="" disabled>
@@ -208,14 +223,19 @@ export function SubmissionForm({
           <label className={labelClass} htmlFor="cost_currency">
             Currency
           </label>
-          <input
+          <select
             id="cost_currency"
             name="cost_currency"
-            maxLength={3}
-            placeholder="EUR"
-            autoCapitalize="characters"
+            defaultValue=""
             className={inputClass}
-          />
+          >
+            <option value="">Not stated</option>
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -248,6 +268,8 @@ export function SubmissionForm({
         </p>
         <textarea id="directions" name="directions" rows={4} maxLength={2000} className={inputClass} />
       </div>
+
+      <PhotoInput photos={photos} onChange={setPhotos} />
 
       {airside === false && (
         <div>

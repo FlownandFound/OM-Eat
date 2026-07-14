@@ -5,7 +5,7 @@ import { UpdateForm } from "./update-form";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Update details — OMEat",
+  title: "Update details — OM-Eat",
 };
 
 export default async function UpdateFindPage({

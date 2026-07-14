@@ -1,5 +1,7 @@
 "use client";
 
+import { CURRENCIES } from "@/lib/currencies";
+
 // Shared curator field editor: used pre-filled from a submission payload in
 // the queue (edit then publish) and from the live row on the Find edit page.
 // Values come back as strings; empty means null. The server action does the
@@ -102,14 +104,19 @@ export function FindFields({ values }: { values: FindFieldValues }) {
           <label className={labelClass} htmlFor="cost_currency">
             Currency
           </label>
-          <input
+          <select
             id="cost_currency"
             name="cost_currency"
-            maxLength={3}
-            autoCapitalize="characters"
             defaultValue={text("cost_currency")}
             className={inputClass}
-          />
+          >
+            <option value="">Not stated</option>
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
