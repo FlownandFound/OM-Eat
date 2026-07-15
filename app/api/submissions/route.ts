@@ -56,10 +56,7 @@ export async function POST(request: Request) {
   const airside =
     body.airside === true ? true : body.airside === false ? false : null;
 
-  const costAmount = text(body.cost_amount, 12);
-  if (costAmount !== null && !/^\d+([.,]\d{1,2})?$/.test(costAmount)) {
-    return invalid("Cost must be a number.");
-  }
+  const costAmount = text(body.cost_amount, 100);
 
   const costCurrency = text(body.cost_currency, 3)?.toUpperCase() ?? null;
   if (costCurrency !== null && !CURRENCY_CODES.includes(costCurrency)) {
@@ -83,9 +80,8 @@ export async function POST(request: Request) {
     dish,
     place,
     airside,
-    terminal_area: text(body.terminal_area, 200),
     walking_time: text(body.walking_time, 100),
-    cost_amount: costAmount ? costAmount.replace(",", ".") : null,
+    cost_amount: costAmount,
     cost_currency: costCurrency,
     payment,
     opening_hours: text(body.opening_hours, 200),
@@ -132,7 +128,7 @@ export async function POST(request: Request) {
   if (type === "new_find") {
     if (!dish || !place || airside === null) {
       return invalid(
-        "Destination, dish, place, and airside/landside are required.",
+        "Destination, dish, vendor/area, and airside/landside are required.",
       );
     }
 

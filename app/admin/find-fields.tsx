@@ -24,7 +24,6 @@ export function readFindFields(form: FormData): FindFieldValues {
     place: value("place"),
     airside:
       airside === "airside" ? true : airside === "landside" ? false : null,
-    terminal_area: value("terminal_area"),
     walking_time: value("walking_time"),
     cost_amount: value("cost_amount"),
     cost_currency: value("cost_currency"),
@@ -57,7 +56,7 @@ export function FindFields({ values }: { values: FindFieldValues }) {
 
       <div>
         <label className={labelClass} htmlFor="place">
-          Place
+          Name of vendor / area of terminal
         </label>
         <input id="place" name="place" maxLength={200} defaultValue={text("place")} className={inputClass} />
       </div>
@@ -73,12 +72,6 @@ export function FindFields({ values }: { values: FindFieldValues }) {
         </select>
       </div>
 
-      <div>
-        <label className={labelClass} htmlFor="terminal_area">
-          Terminal or area
-        </label>
-        <input id="terminal_area" name="terminal_area" maxLength={200} defaultValue={text("terminal_area")} className={inputClass} />
-      </div>
 
       <div>
         <label className={labelClass} htmlFor="walking_time">
@@ -95,8 +88,7 @@ export function FindFields({ values }: { values: FindFieldValues }) {
           <input
             id="cost_amount"
             name="cost_amount"
-            inputMode="decimal"
-            maxLength={12}
+            maxLength={100}
             defaultValue={text("cost_amount")}
             className={inputClass}
           />

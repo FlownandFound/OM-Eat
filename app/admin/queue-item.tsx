@@ -21,9 +21,8 @@ type Submission = {
 // Fields an update can correct, with display labels for the diff view.
 const DIFF_FIELDS: [string, string][] = [
   ["dish", "Dish"],
-  ["place", "Place"],
+  ["place", "Name of vendor / area of terminal"],
   ["airside", "Airside/landside"],
-  ["terminal_area", "Terminal or area"],
   ["walking_time", "Walking time"],
   ["cost_amount", "Cost"],
   ["cost_currency", "Currency"],

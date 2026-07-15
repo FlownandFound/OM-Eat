@@ -16,8 +16,8 @@ const FIND_FIELDS = [
   "dish",
   "place",
   "airside",
-  "terminal_area",
   "walking_time",
+  "cost_amount",
   "cost_currency",
   "payment",
   "opening_hours",
@@ -35,19 +35,13 @@ function imagePaths(payload: Payload): string[] {
     : [];
 }
 
-// Payload → finds row. cost_amount is stored in the payload as a string
-// (JSON survives curator edits losslessly that way); it becomes numeric
-// only here, at the moment of publishing. Not exported: a "use server"
-// module may only export async actions.
+// Payload → finds row. Not exported: a "use server" module may only
+// export async actions.
 function mapPayloadToFind(payload: Payload): Record<string, unknown> {
   const row: Record<string, unknown> = {};
   for (const field of FIND_FIELDS) {
     row[field] = payload[field] ?? null;
   }
-
-  const cost = Number(String(payload.cost_amount ?? "").replace(",", "."));
-  row.cost_amount =
-    payload.cost_amount != null && Number.isFinite(cost) ? cost : null;
 
   // Database check constraint: maps_url is landside only.
   if (row.airside === true) row.maps_url = null;

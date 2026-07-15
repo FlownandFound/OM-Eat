@@ -72,7 +72,6 @@ export function SubmissionForm({
           dish: value("dish"),
           place: value("place"),
           airside,
-          terminal_area: value("terminal_area"),
           walking_time: value("walking_time"),
           cost_amount: value("cost_amount"),
           cost_currency: value("cost_currency"),
@@ -182,17 +181,12 @@ export function SubmissionForm({
 
       <div>
         <label className={labelClass} htmlFor="place">
-          Place <span aria-hidden="true">*</span>
+          Name of vendor / area of terminal <span aria-hidden="true">*</span>
         </label>
-        <p className="mt-1 text-xs text-secondary">Where it is sold.</p>
+        <p className="mt-1 text-xs text-secondary">
+          The vendor if known; otherwise where in the terminal to look.
+        </p>
         <input id="place" name="place" required maxLength={200} className={inputClass} />
-      </div>
-
-      <div>
-        <label className={labelClass} htmlFor="terminal_area">
-          Terminal or area
-        </label>
-        <input id="terminal_area" name="terminal_area" maxLength={200} className={inputClass} />
       </div>
 
       <div>
@@ -213,9 +207,8 @@ export function SubmissionForm({
           <input
             id="cost_amount"
             name="cost_amount"
-            inputMode="decimal"
-            maxLength={12}
-            placeholder="4.50"
+            maxLength={100}
+            placeholder="4.50, or 11.50 for 6"
             className={inputClass}
           />
         </div>

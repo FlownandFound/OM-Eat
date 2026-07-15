@@ -62,7 +62,6 @@ export function UpdateForm({ findId }: { findId: string }) {
               : airsideValue === "landside"
                 ? false
                 : null,
-          terminal_area: value("terminal_area"),
           walking_time: value("walking_time"),
           cost_amount: value("cost_amount"),
           cost_currency: value("cost_currency"),
@@ -147,7 +146,7 @@ export function UpdateForm({ findId }: { findId: string }) {
 
           <div>
             <label className={labelClass} htmlFor="place">
-              Place
+              Name of vendor / area of terminal
             </label>
             <input id="place" name="place" maxLength={200} className={inputClass} />
           </div>
@@ -163,12 +162,6 @@ export function UpdateForm({ findId }: { findId: string }) {
             </select>
           </div>
 
-          <div>
-            <label className={labelClass} htmlFor="terminal_area">
-              Terminal or area
-            </label>
-            <input id="terminal_area" name="terminal_area" maxLength={200} className={inputClass} />
-          </div>
 
           <div>
             <label className={labelClass} htmlFor="walking_time">
@@ -185,8 +178,8 @@ export function UpdateForm({ findId }: { findId: string }) {
               <input
                 id="cost_amount"
                 name="cost_amount"
-                inputMode="decimal"
-                maxLength={12}
+                maxLength={100}
+                placeholder="4.50, or 11.50 for 6"
                 className={inputClass}
               />
             </div>

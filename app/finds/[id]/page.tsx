@@ -18,7 +18,7 @@ export default async function FindPage({
   const { data: find } = await supabase
     .from("finds")
     .select(
-      "id, dish, place, airside, terminal_area, walking_time, cost_amount, cost_currency, payment, opening_hours, directions, maps_url, submitter_display, confirm_count, last_confirmed_at, destinations ( iata, city, country, slug )",
+      "id, dish, place, airside, walking_time, cost_amount, cost_currency, payment, opening_hours, directions, maps_url, submitter_display, confirm_count, last_confirmed_at, destinations ( iata, city, country, slug )",
     )
     .eq("id", id)
     .eq("status", "published")
@@ -51,7 +51,6 @@ export default async function FindPage({
       : null;
 
   const facts: [string, string | null][] = [
-    ["Terminal / area", find.terminal_area],
     ["Walking time", find.walking_time],
     ["Cost", cost],
     ["Payment", paymentLabel],
