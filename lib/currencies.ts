@@ -22,6 +22,12 @@ const COUNTRY_SYMBOLS: Record<string, string> = {
   Jersey: "£",
 };
 
+// Currency symbol for a destination country, or "" if unknown. Used to
+// prefix the price input on the submission form once a destination is picked.
+export function countrySymbol(country: string | null | undefined): string {
+  return country ? (COUNTRY_SYMBOLS[country]?.trim() ?? "") : "";
+}
+
 // Price is a number and cost_qty says how many items it buys, so the symbol
 // placement is never ambiguous: qty 1 -> "€11.50", qty 6 -> "€11.50 for 6".
 // Unknown country: the bare number is shown rather than a wrong symbol.

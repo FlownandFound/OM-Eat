@@ -35,7 +35,10 @@ export function FindEditor({ find }: { find: Record<string, unknown> }) {
           run(() => updateFind(find.id as string, fields), "Record amended.");
         }}
       >
-        <FindFields values={find} />
+        {/* key remounts the uncontrolled fields when navigating between finds,
+            so defaultValue/defaultChecked reset to this find's server data
+            instead of retaining the previously-viewed find's state. */}
+        <FindFields key={find.id as string} values={find} />
 
         {error && (
           <p

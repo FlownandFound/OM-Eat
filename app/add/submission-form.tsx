@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { PhotoInput } from "./photo-input";
+import { countrySymbol } from "@/lib/currencies";
 
 type Destination = {
   id: string;
@@ -27,6 +28,13 @@ export function SubmissionForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [logged, setLogged] = useState(false);
+  const [destinationId, setDestinationId] = useState(
+    defaultDestinationId ?? "",
+  );
+
+  const symbol = countrySymbol(
+    destinations.find((d) => d.id === destinationId)?.country,
+  );
 
   if (logged) {
     return (
@@ -120,7 +128,8 @@ export function SubmissionForm({
           id="destination_id"
           name="destination_id"
           required
-          defaultValue={defaultDestinationId ?? ""}
+          value={destinationId}
+          onChange={(e) => setDestinationId(e.target.value)}
           className={inputClass}
         >
           <option value="" disabled>
@@ -204,14 +213,21 @@ export function SubmissionForm({
           <label className={labelClass} htmlFor="cost_amount">
             Price
           </label>
-          <input
-            id="cost_amount"
-            name="cost_amount"
-            inputMode="decimal"
-            maxLength={12}
-            placeholder="4.50"
-            className={inputClass}
-          />
+          <div className="mt-1 flex items-stretch overflow-hidden rounded border border-line bg-surface">
+            {symbol && (
+              <span className="flex items-center border-r border-line px-3 text-base text-secondary">
+                {symbol}
+              </span>
+            )}
+            <input
+              id="cost_amount"
+              name="cost_amount"
+              inputMode="decimal"
+              maxLength={12}
+              placeholder="4.50"
+              className="w-full bg-transparent px-3 py-2 text-base"
+            />
+          </div>
         </div>
         <div>
           <label className={labelClass} htmlFor="cost_qty">
@@ -226,10 +242,6 @@ export function SubmissionForm({
           </select>
         </div>
       </div>
-      <p className="text-xs text-secondary">
-        Local currency is assumed from the destination. Leave the count at 1
-        if the price is for one.
-      </p>
 
       <label className="flex items-start gap-3">
         <input type="checkbox" name="crew_discount" className="mt-1 h-4 w-4" />
