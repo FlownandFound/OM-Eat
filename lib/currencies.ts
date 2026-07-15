@@ -36,5 +36,5 @@ export function formatCost(
     : String(amount);
   const symbol = country ? (COUNTRY_SYMBOLS[country] ?? "") : "";
   const priced = `${symbol}${price}`;
-  return qty != null && qty > 1 ? `${priced} for ${qty}` : priced;
+  return qty != null && qty > 1 ? `${priced} for ${qty}` : `${priced} each`;
 }
