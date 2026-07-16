@@ -39,6 +39,13 @@ function display(value: unknown, key?: string): string {
     if (key === "crew_discount") return value ? "Available" : "Not available";
     return value ? "Airside" : "Landside";
   }
+  // The payload holds the price as a string while the finds column is
+  // numeric ("4.50" vs 4.5); normalise both so a restated price does not
+  // show up as a proposed change.
+  if (key === "cost_amount") {
+    const n = Number(String(value).replace(",", "."));
+    if (Number.isFinite(n)) return n.toFixed(2);
+  }
   return String(value);
 }
 

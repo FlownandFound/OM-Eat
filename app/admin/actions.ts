@@ -34,6 +34,25 @@ function imagePaths(payload: Payload): string[] {
     : [];
 }
 
+// Curator-entered fields follow the public intake's format rules. Without
+// this, an unparseable price silently became null and a maps_url of any
+// shape landed in a public href.
+function findFieldsError(payload: Payload): string | null {
+  const cost = payload.cost_amount;
+  if (
+    cost != null &&
+    cost !== "" &&
+    !/^\d+([.,]\d{1,2})?$/.test(String(cost).trim())
+  ) {
+    return "Price must be a plain number, e.g. 4.50.";
+  }
+  const maps = payload.maps_url;
+  if (maps != null && maps !== "" && !/^https?:\/\//.test(String(maps))) {
+    return "Map link must be a full web address (https://…).";
+  }
+  return null;
+}
+
 // Payload → finds row. Not exported: a "use server" module may only
 // export async actions.
 function mapPayloadToFind(payload: Payload): Record<string, unknown> {
@@ -80,9 +99,30 @@ export async function publishNewFind(
   if (!submission) return { error: "Submission not found or already handled." };
 
   // "Edit then publish": curator field edits overlay the payload.
-  const find = mapPayloadToFind({ ...submission.payload, ...edits });
+  const merged = { ...submission.payload, ...edits };
+  const fieldsError = findFieldsError(merged);
+  if (fieldsError) return { error: fieldsError };
+
+  const find = mapPayloadToFind(merged);
+  if (find.airside == null) {
+    return { error: "State whether the Find is airside or landside." };
+  }
   find.submitter_display = submission.submitter_display;
   find.status = "published";
+
+  // Claim the submission first (compare-and-set on status): if the insert
+  // below fails partway, a retry — or a second curator — must not be able
+  // to publish the same submission twice.
+  const { data: claimed, error: claimError } = await supabase
+    .from("submissions")
+    .update({ status: "published" })
+    .eq("id", submission.id)
+    .eq("status", "pending")
+    .select("id");
+  if (claimError) return { error: claimError.message };
+  if (!claimed?.length) {
+    return { error: "Submission not found or already handled." };
+  }
 
   const { data: inserted, error: insertError } = await supabase
     .from("finds")
@@ -90,6 +130,11 @@ export async function publishNewFind(
     .select("id")
     .single();
   if (insertError || !inserted) {
+    // Nothing was published; release the claim so the curator can retry.
+    await supabase
+      .from("submissions")
+      .update({ status: "pending" })
+      .eq("id", submission.id);
     return { error: insertError?.message ?? "Publish failed." };
   }
 
@@ -103,14 +148,15 @@ export async function publishNewFind(
         sort_order: index,
       })),
     );
-    if (imagesError) return { error: imagesError.message };
+    // The Find is live, so the claim must stand — releasing it would let a
+    // retry publish a duplicate. Report the photos separately.
+    if (imagesError) {
+      revalidatePath("/", "layout");
+      return {
+        error: `Published, but the photos failed to attach (${imagesError.message}). Add them from the Finds editor.`,
+      };
+    }
   }
-
-  const { error: statusError } = await supabase
-    .from("submissions")
-    .update({ status: "published" })
-    .eq("id", submission.id);
-  if (statusError) return { error: statusError.message };
 
   revalidatePath("/", "layout");
   return {};
@@ -134,6 +180,9 @@ export async function applyUpdate(
   if (!submission || !submission.find_id)
     return { error: "Submission not found or already handled." };
 
+  const fieldsError = findFieldsError(acceptedFields);
+  if (fieldsError) return { error: fieldsError };
+
   const changes = mapPayloadToFind(acceptedFields);
   // Only touch columns the curator explicitly accepted.
   for (const key of Object.keys(changes)) {
@@ -141,12 +190,53 @@ export async function applyUpdate(
   }
   delete changes.destination_id; // updates never move a Find
 
+  // The database forbids a map link on an airside Find. Resolve that rule
+  // here so the curator gets a plain answer, not a raw constraint error.
+  if (changes.airside === true) {
+    // Going airside clears any existing map link.
+    changes.maps_url = null;
+  } else if (changes.maps_url != null && changes.airside !== false) {
+    const { data: current } = await supabase
+      .from("finds")
+      .select("airside")
+      .eq("id", submission.find_id)
+      .maybeSingle();
+    if (current?.airside !== false) {
+      return {
+        error:
+          "Map link not applied: this Find is airside and map links are landside only. Untick it and apply again.",
+      };
+    }
+  }
+
+  // Claim the submission first (compare-and-set on status) so a retry after
+  // a partial failure, or a second curator, cannot apply it twice — photo
+  // rows in particular would otherwise duplicate.
+  const { data: claimed, error: claimError } = await supabase
+    .from("submissions")
+    .update({ status: "published" })
+    .eq("id", submission.id)
+    .eq("status", "pending")
+    .select("id");
+  if (claimError) return { error: claimError.message };
+  if (!claimed?.length) {
+    return { error: "Submission not found or already handled." };
+  }
+  const releaseClaim = () =>
+    supabase
+      .from("submissions")
+      .update({ status: "pending" })
+      .eq("id", submission.id);
+
   if (Object.keys(changes).length > 0) {
     const { error } = await supabase
       .from("finds")
       .update(changes)
       .eq("id", submission.find_id);
-    if (error) return { error: error.message };
+    if (error) {
+      await releaseClaim();
+      return { error: error.message };
+    }
   }
 
   // Photos: attach only the paths the curator accepted, and only ones that
@@ -173,7 +263,12 @@ export async function applyUpdate(
         sort_order: (count ?? 0) + index,
       })),
     );
-    if (imagesError) return { error: imagesError.message };
+    if (imagesError) {
+      // Field changes are idempotent, so releasing the claim makes a clean
+      // retry possible.
+      await releaseClaim();
+      return { error: imagesError.message };
+    }
   }
 
   // Unaccepted photos never reach the Find; clear them from storage.
@@ -187,12 +282,6 @@ export async function applyUpdate(
       .remove(leftover);
   }
 
-  const { error } = await supabase
-    .from("submissions")
-    .update({ status: "published" })
-    .eq("id", submission.id);
-  if (error) return { error: error.message };
-
   revalidatePath("/", "layout");
   return {};
 }
@@ -205,8 +294,14 @@ export async function updateFind(
 ): Promise<{ error?: string }> {
   const supabase = await createAuthClient();
 
+  const fieldsError = findFieldsError(fields);
+  if (fieldsError) return { error: fieldsError };
+
   const changes = mapPayloadToFind(fields);
   delete changes.destination_id; // edits never move a Find
+  if (changes.airside == null) {
+    return { error: "State whether the Find is airside or landside." };
+  }
 
   const { error } = await supabase
     .from("finds")

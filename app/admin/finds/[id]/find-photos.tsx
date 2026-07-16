@@ -69,7 +69,11 @@ export function FindPhotos({
 
       {images.length < MAX_PHOTOS && (
         <div className="mt-4">
-          <PhotoInput photos={staged} onChange={setStaged} />
+          <PhotoInput
+            photos={staged}
+            onChange={setStaged}
+            max={MAX_PHOTOS - images.length}
+          />
           {staged.length > 0 && (
             <button
               type="button"

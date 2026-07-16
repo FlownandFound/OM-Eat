@@ -25,7 +25,7 @@ The joke is the marketing: the site speaks in the deadpan register of a genuine 
 ## Stack
 
 - Next.js, App Router, TypeScript, Tailwind. Deployed on Vercel Hobby.
-- Supabase (free tier): Postgres, Auth (curators only), Storage (`find-images` bucket).
+- Supabase (free tier): Postgres, Auth (curators only), Storage (`Find-images` bucket — capital F, as created in the dashboard; see `lib/images.ts`).
 - `@supabase/supabase-js` v2 with `@supabase/ssr` for server/client split.
 - Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only, never in client bundles), `CRON_SECRET`.
 - Schema lives in `supabase/migrations/`; never change schema outside a migration.

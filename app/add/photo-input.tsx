@@ -41,9 +41,12 @@ async function compressToDataUrl(file: File): Promise<string | null> {
 export function PhotoInput({
   photos,
   onChange,
+  max = MAX_PHOTOS,
 }: {
   photos: string[];
   onChange: (photos: string[]) => void;
+  // Fewer slots than MAX_PHOTOS when the record already carries photos.
+  max?: number;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -56,7 +59,7 @@ export function PhotoInput({
     try {
       const next = [...photos];
       for (const file of Array.from(fileList)) {
-        if (next.length >= MAX_PHOTOS) break;
+        if (next.length >= max) break;
         const dataUrl = await compressToDataUrl(file);
         if (!dataUrl) {
           setError("That photo could not be processed. Try a different one.");
@@ -75,8 +78,8 @@ export function PhotoInput({
     <div>
       <span className="block text-sm font-semibold">Photos</span>
       <p className="mt-1 text-xs text-secondary">
-        Optional, up to {MAX_PHOTOS}. Show the item, or a landmark on the
-        route to it. Photos are reviewed before publication.
+        Optional, up to {max}. Show the item, or a landmark on the route to
+        it. Photos are reviewed before publication.
       </p>
 
       {photos.length > 0 && (
@@ -102,7 +105,7 @@ export function PhotoInput({
         </ul>
       )}
 
-      {photos.length < MAX_PHOTOS && (
+      {photos.length < max && (
         <button
           type="button"
           disabled={busy}

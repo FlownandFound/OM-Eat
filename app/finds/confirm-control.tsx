@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 // One-tap accuracy signal. Never merged with Rating (quality) — hard rule.
 
 const STORAGE_KEY = "omeat_confirmed_finds";
+
+// localStorage is only written by this component, so there is nothing to
+// subscribe to; the snapshot is re-read on each render. useSyncExternalStore
+// gives us the server render ("not confirmed") and the stored client state
+// without a setState-in-effect.
+const emptySubscribe = () => () => {};
 
 function confirmedIds(): string[] {
   try {
@@ -44,13 +50,16 @@ export function ConfirmControl({
   const [lastConfirmedAt, setLastConfirmedAt] = useState(
     initialLastConfirmedAt,
   );
-  const [confirmed, setConfirmed] = useState(false);
+  const [justConfirmed, setJustConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (confirmedIds().includes(findId)) setConfirmed(true);
-  }, [findId]);
+  const storedConfirmed = useSyncExternalStore(
+    emptySubscribe,
+    () => confirmedIds().includes(findId),
+    () => false,
+  );
+  const confirmed = storedConfirmed || justConfirmed;
 
   async function onConfirm() {
     setError(null);
@@ -73,7 +82,7 @@ export function ConfirmControl({
         setCount(data.confirm_count);
         setLastConfirmedAt(data.last_confirmed_at);
       }
-      setConfirmed(true);
+      setJustConfirmed(true);
       try {
         localStorage.setItem(
           STORAGE_KEY,

@@ -10,13 +10,20 @@ export function FindEditor({ find }: { find: Record<string, unknown> }) {
   const [status, setStatus] = useState(find.status as string);
   const [pending, startTransition] = useTransition();
 
-  const run = (action: () => Promise<{ error?: string }>, done: string) => {
+  const run = (
+    action: () => Promise<{ error?: string }>,
+    done: string,
+    onSuccess?: () => void,
+  ) => {
     setError(null);
     setNotice(null);
     startTransition(async () => {
       const result = await action();
       if (result.error) setError(result.error);
-      else setNotice(done);
+      else {
+        setNotice(done);
+        onSuccess?.();
+      }
     });
   };
 
@@ -70,8 +77,8 @@ export function FindEditor({ find }: { find: Record<string, unknown> }) {
               run(
                 () => setFindStatus(find.id as string, next),
                 next === "archived" ? "Record archived." : "Record restored.",
+                () => setStatus(next),
               );
-              setStatus(next);
             }}
             className="rounded border border-line px-4 py-3 font-bold disabled:opacity-50"
           >
