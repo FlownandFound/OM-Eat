@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import Link from "next/link";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { Footer } from "./footer";
@@ -70,6 +71,7 @@ export default function RootLayout({
         </header>
         {children}
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
