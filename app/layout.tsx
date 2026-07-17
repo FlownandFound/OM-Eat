@@ -19,7 +19,7 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "OM-Eat",
   description:
-    "Reference guide to what to eat on a turnaround, maintained by BA Euroflyer crew at London Gatwick.",
+    "Reference guide for what to eat and where on a turnaround.",
   manifest: "/site.webmanifest",
   icons: {
     icon: [

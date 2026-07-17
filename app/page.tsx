@@ -3,7 +3,7 @@ import Link from "next/link";
 export const metadata = {
   title: "OM-Eat — Ops Manual E(at)",
   description:
-    "Reference guide to what to eat on a turnaround, maintained by BA Euroflyer crew at London Gatwick.",
+    "Reference guide for what to eat and where on a turnaround.",
 };
 
 export default function HomePage() {
