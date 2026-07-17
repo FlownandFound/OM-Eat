@@ -54,7 +54,7 @@ export default async function DestinationsPage() {
               return (
                 <li key={d.id} className="border-b border-line">
                   <Link
-                    href={`/destinations/${d.slug}`}
+                    href={`/destinations/${d.iata}`}
                     className="flex items-baseline gap-3 py-3 text-ink no-underline"
                   >
                     <span className="w-12 shrink-0 font-mono text-sm font-bold">

@@ -66,7 +66,7 @@ export default async function FindPage({
     <main className="mx-auto max-w-xl px-4 py-8">
       {destination && (
         <Link
-          href={`/destinations/${destination.slug}`}
+          href={`/destinations/${destination.iata}`}
           className="font-mono text-sm font-bold text-accent no-underline"
         >
           {destination.iata} {destination.city}

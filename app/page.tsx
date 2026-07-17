@@ -45,9 +45,6 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <p className="mt-10 text-xs text-muted">
-        Revision status: continuous. Distribution: unrestricted.
-      </p>
     </main>
   );
 }

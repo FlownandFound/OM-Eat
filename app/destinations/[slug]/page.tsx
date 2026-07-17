@@ -14,10 +14,12 @@ export default async function DestinationPage({
   const { slug } = await params;
   const supabase = createPublicClient();
 
+  // Crew know the airport codes, so /destinations/SZG (any case) is the
+  // canonical URL; old city slugs keep working.
   const { data: destination } = await supabase
     .from("destinations")
     .select("id, iata, city, country")
-    .eq("slug", slug)
+    .or(`iata.eq.${slug.toUpperCase()},slug.eq.${slug.toLowerCase()}`)
     .maybeSingle();
 
   if (!destination) notFound();
@@ -96,9 +98,12 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const city = slug
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-  return { title: `${city} — OM-Eat` };
+  const supabase = createPublicClient();
+  const { data: destination } = await supabase
+    .from("destinations")
+    .select("iata, city")
+    .or(`iata.eq.${slug.toUpperCase()},slug.eq.${slug.toLowerCase()}`)
+    .maybeSingle();
+  if (!destination) return { title: "OM-Eat" };
+  return { title: `${destination.iata} ${destination.city} — OM-Eat` };
 }

@@ -20,7 +20,9 @@ export default async function AddFindPage({
     .order("city");
 
   const defaultDestinationId = destinations?.find(
-    (d) => d.slug === destinationSlug,
+    (d) =>
+      d.slug === destinationSlug?.toLowerCase() ||
+      d.iata === destinationSlug?.toUpperCase(),
   )?.id;
 
   return (

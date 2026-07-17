@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Footer } from "./footer";
 import "./globals.css";
 
 const plexSans = IBM_Plex_Sans({
@@ -68,6 +69,7 @@ export default function RootLayout({
           </nav>
         </header>
         {children}
+        <Footer />
       </body>
     </html>
   );
