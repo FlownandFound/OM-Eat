@@ -30,6 +30,7 @@ The joke is the marketing: the site speaks in the deadpan register of a genuine 
 - Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only, never in client bundles), `CRON_SECRET`.
 - Buy Me a Coffee slug: `christrott` (https://buymeacoffee.com/christrott) — plain footer link only (`app/footer.tsx`); never add the BMC embed script or button-image API.
 - Schema lives in `supabase/migrations/`; never change schema outside a migration.
+- **Never apply a schema or seed change by typing SQL into the dashboard SQL Editor.** Write a migration file and run `supabase db push`. Supabase tracks applied migrations in a history table; SQL run by hand changes the database without updating that history, so the next `db push` replays the migration against a database that already has it. Harmless for an idempotent insert, a hard error for an `alter table` or a new constraint — and the error looks like a bug in the migration rather than the drift it actually is. The SQL Editor is for **reading** only.
 - `supabase db query` against the remote returns 403 "insufficient privileges" from the management API (observed July 2026). This is platform-side, not a credentials fault. `supabase db push` works. For ad-hoc reads, use the REST API with the service key, or the dashboard SQL Editor.
 
 ## Free-tier constraints (treat as invariants)
