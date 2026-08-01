@@ -2,8 +2,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "OM-Eat — Ops Manual E(at)",
-  description:
-    "Reference guide for what to eat and where on a turnaround.",
+  description: "Reference guide for what to eat and where on a turnaround.",
 };
 
 export default function HomePage() {
@@ -44,7 +43,6 @@ export default function HomePage() {
           Add a Find
         </Link>
       </div>
-
     </main>
   );
 }

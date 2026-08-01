@@ -53,6 +53,7 @@ export default async function proxy(request: NextRequest) {
   return response;
 }
 
+// Matches /admin itself as well as everything beneath it.
 export const config = {
-  matcher: ["/admin/:path*", "/admin"],
+  matcher: "/admin/:path*",
 };

@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /* OM-Eat design tokens. Light is the default (the manual is printed on
-   paper); dark is an explicit opt-in via [data-theme="dark"], set on <html>
-   from a matchMedia check at load so form controls follow the theme. */
+   paper); dark follows the device setting. color-scheme carries the theme
+   into form controls and scrollbars, which have no Tailwind classes. */
 :root {
   --om-page: #fafaf7;
   --om-surface: #ffffff;
@@ -12,6 +12,7 @@
   --om-text-muted: #9a9a92;
   --om-accent: #1e5f6b;
   --om-accent-contrast: #ffffff;
+  --om-danger: #b91c1c;
 
   --om-airside-bg: #e6efe7;
   --om-airside-fg: #1f5e38;
@@ -21,22 +22,25 @@
   color-scheme: light;
 }
 
-[data-theme="dark"] {
-  --om-page: #121311;
-  --om-surface: #1a1b18;
-  --om-border: #2f312c;
-  --om-text-primary: #f1f1ec;
-  --om-text-secondary: #9e9e95;
-  --om-text-muted: #6e6e67;
-  --om-accent: #7fbcc7;
-  --om-accent-contrast: #121311;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --om-page: #121311;
+    --om-surface: #1a1b18;
+    --om-border: #2f312c;
+    --om-text-primary: #f1f1ec;
+    --om-text-secondary: #9e9e95;
+    --om-text-muted: #6e6e67;
+    --om-accent: #7fbcc7;
+    --om-accent-contrast: #121311;
+    --om-danger: #f28b82;
 
-  --om-airside-bg: #1b3324;
-  --om-airside-fg: #8fcba6;
-  --om-landside-bg: #332714;
-  --om-landside-fg: #dfb56a;
+    --om-airside-bg: #1b3324;
+    --om-airside-fg: #8fcba6;
+    --om-landside-bg: #332714;
+    --om-landside-fg: #dfb56a;
 
-  color-scheme: dark;
+    color-scheme: dark;
+  }
 }
 
 @theme inline {
@@ -48,6 +52,7 @@
   --color-muted: var(--om-text-muted);
   --color-accent: var(--om-accent);
   --color-accent-contrast: var(--om-accent-contrast);
+  --color-danger: var(--om-danger);
   --color-airside-bg: var(--om-airside-bg);
   --color-airside-fg: var(--om-airside-fg);
   --color-landside-bg: var(--om-landside-bg);

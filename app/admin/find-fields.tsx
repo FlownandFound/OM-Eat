@@ -1,6 +1,5 @@
 "use client";
 
-
 // Shared curator field editor: used pre-filled from a submission payload in
 // the queue (edit then publish) and from the live row on the Find edit page.
 // Values come back as strings; empty means null. The server action does the
@@ -70,7 +69,6 @@ export function FindFields({ values }: { values: FindFieldValues }) {
           <option value="landside">Landside</option>
         </select>
       </div>
-
 
       <div>
         <label className={labelClass} htmlFor="walking_time">

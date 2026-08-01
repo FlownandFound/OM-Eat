@@ -4,7 +4,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { AirsideBadge } from "@/app/finds/airside-badge";
 import { ConfirmControl } from "@/app/finds/confirm-control";
 import { findImageUrl } from "@/lib/images";
-import { formatCost } from "@/lib/currencies";
+import { formatCost } from "@/lib/countries";
 
 export const revalidate = 60;
 
@@ -98,6 +98,10 @@ export default async function FindPage({
       </dl>
 
       {images && images.length > 0 && (
+        // Plain <img> against the public bucket URL: Next's image optimiser
+        // is metered on Vercel Hobby and these are already compressed to
+        // ~300 KB on upload. A fixed aspect box keeps the grid from
+        // reflowing as photos of different shapes arrive.
         <div className="mt-6 grid grid-cols-2 gap-3">
           {images.map((image) => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -105,7 +109,9 @@ export default async function FindPage({
               key={image.id}
               src={findImageUrl(image.storage_path)}
               alt={image.alt_text}
-              className="w-full rounded border border-line object-cover"
+              loading="lazy"
+              decoding="async"
+              className="aspect-[4/3] w-full rounded border border-line object-cover"
             />
           ))}
         </div>

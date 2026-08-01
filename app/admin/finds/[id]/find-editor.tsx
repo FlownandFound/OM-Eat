@@ -50,7 +50,7 @@ export function FindEditor({ find }: { find: Record<string, unknown> }) {
         {error && (
           <p
             role="alert"
-            className="mt-4 rounded border border-red-700 px-3 py-2 text-sm text-red-700"
+            className="mt-4 rounded border border-danger px-3 py-2 text-sm text-danger"
           >
             {error}
           </p>

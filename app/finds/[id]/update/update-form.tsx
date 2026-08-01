@@ -167,7 +167,6 @@ export function UpdateForm({ findId }: { findId: string }) {
             </select>
           </div>
 
-
           <div>
             <label className={labelClass} htmlFor="walking_time">
               Walking time
@@ -281,7 +280,7 @@ export function UpdateForm({ findId }: { findId: string }) {
       </div>
 
       {error && (
-        <p role="alert" className="rounded border border-red-700 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="rounded border border-danger px-3 py-2 text-sm text-danger">
           {error}
         </p>
       )}

@@ -19,8 +19,7 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "OM-Eat",
-  description:
-    "Reference guide for what to eat and where on a turnaround.",
+  description: "Reference guide for what to eat and where on a turnaround.",
   manifest: "/site.webmanifest",
   icons: {
     icon: [
@@ -35,10 +34,6 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#1E5F6B" };
 
-// Follow the device theme before first paint; tokens live under
-// [data-theme="dark"] in globals.css.
-const themeScript = `if(window.matchMedia("(prefers-color-scheme: dark)").matches)document.documentElement.setAttribute("data-theme","dark");`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -47,13 +42,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      suppressHydrationWarning
       className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <header className="border-b border-line">
           <nav className="mx-auto flex w-full max-w-xl items-center justify-between px-4 py-3 font-mono text-sm font-semibold">
             <Link href="/" className="font-mono font-bold text-ink no-underline">

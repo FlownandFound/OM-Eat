@@ -29,9 +29,13 @@ The joke is the marketing: the site speaks in the deadpan register of a genuine 
 - `@supabase/supabase-js` v2 with `@supabase/ssr` for server/client split.
 - Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only, never in client bundles), `CRON_SECRET`.
 - Buy Me a Coffee slug: `christrott` (https://buymeacoffee.com/christrott) — plain footer link only (`app/footer.tsx`); never add the BMC embed script or button-image API.
+
+## Working with the database
+
 - Schema lives in `supabase/migrations/`; never change schema outside a migration.
 - **Never apply a schema or seed change by typing SQL into the dashboard SQL Editor.** Write a migration file and run `supabase db push`. Supabase tracks applied migrations in a history table; SQL run by hand changes the database without updating that history, so the next `db push` replays the migration against a database that already has it. Harmless for an idempotent insert, a hard error for an `alter table` or a new constraint — and the error looks like a bug in the migration rather than the drift it actually is. The SQL Editor is for **reading** only.
 - `supabase db query` against the remote returns 403 "insufficient privileges" from the management API (observed July 2026). This is platform-side, not a credentials fault. `supabase db push` works. For ad-hoc reads, use the REST API with the service key, or the dashboard SQL Editor.
+- Adding a destination is a migration too — an idempotent `insert … on conflict (iata) do nothing`, as in the existing `add_*.sql` files.
 
 ## Free-tier constraints (treat as invariants)
 
@@ -44,7 +48,16 @@ The joke is the marketing: the site speaks in the deadpan register of a genuine 
 
 Tables: `destinations`, `finds`, `find_images`, `submissions`, `confirms`.
 
-Key `finds` fields: dish, place, destination_id, **airside (boolean, not null; the single most important field on the site, rendered as a hard prominent badge)**, terminal_area, walking_time, cost + currency, payment method, opening_hours, directions (free text, primary mechanism for airside), maps_url (landside only, nullable), submitter_display (optional, stored only as "First name + last initial", never more), status, confirm_count, last_confirmed_at.
+`finds` columns, as the migrations leave them:
+
+- `destination_id`, `dish`, `place` — `place` is "name of vendor / area of terminal"; the separate `terminal_area` column was merged into it, because crew often can't recall the vendor name.
+- **`airside` (boolean, not null)** — the single most important field on the site, rendered as a hard prominent badge.
+- `walking_time` (free text), `opening_hours`, `payment` (`cash`/`card`/`both`).
+- `cost_amount` (numeric) + `cost_qty` (smallint, 1–99) — the price and how many items it buys. **There is no currency column**: the destination fixes the country and the country fixes the currency, so the symbol is derived at display time from `destinations.country` in `lib/countries.ts`. Adding a destination in a country not already on the network means adding a row there too, or prices render bare.
+- `crew_discount` (boolean, not null) — the price shown is the discounted one, on production of ID.
+- `directions` (free text, the primary wayfinding mechanism for airside), `maps_url` (landside only, nullable, enforced by a check constraint).
+- `submitter_display` (optional, stored only as "First name + last initial", never more).
+- `status` (`published`/`archived`), `confirm_count`, `last_confirmed_at` — the last two maintained by the `apply_confirm` trigger, never by application code.
 
 Freshness display format, exactly: `Confirmed by 12 crew, last on 3 June 2026.`
 
@@ -57,7 +70,8 @@ Freshness display format, exactly: `Confirmed by 12 crew, last on 3 June 2026.`
   - There is deliberately **no shared crew password**. Do not add one.
 - All public writes go through **server route handlers using the service role key**. Anon key has no insert/update/delete policies anywhere. RLS is enabled on every table.
 - Reviews (Phase 2) are **text only. Never allow image upload on any unmoderated path.** Images reach the site only via the moderated submission → curator publish flow.
-- `/admin` is unlinked from the public site and auth-walled (Supabase email auth, curator accounts created manually, public sign-up disabled).
+- `/admin` is unlinked from the public site and auth-walled by `proxy.ts` at the repo root (this project's Next.js version names the middleware file `proxy.ts`; there is no `middleware.ts`). Supabase email auth, curator accounts created manually, public sign-up disabled. Curator writes go through `createAuthClient()` so RLS, not the service key, is the authority.
+- Never interpolate a URL segment straight into a PostgREST filter string (`.or()`, `.filter()`). A comma or bracket from the path is read as filter syntax. Check the shape first — see `SLUG_PATTERN` in `app/destinations/[slug]/page.tsx`.
 
 ## Out of scope, permanently (binding)
 
@@ -71,4 +85,6 @@ If a requested feature belongs to this list, say so and stop.
 - Small files, no premature abstraction. This codebase should be readable by its owner, a pilot who debugs it between flights.
 - Mobile first: the primary device is a phone on a crew bus. Test narrow viewports first.
 - Prefer database constraints and Postgres triggers (e.g. confirm_count maintenance) over application-side bookkeeping.
+- Colours come from the design tokens in `app/globals.css` (`text-ink`, `bg-surface`, `border-line`, `text-danger`, …). Do not reach for raw Tailwind palette classes like `text-red-700`: the tokens flip with the device's dark mode and the palette classes do not.
+- Dark mode is a plain `@media (prefers-color-scheme: dark)` block in `globals.css`. There is no theme toggle and no theme script; do not add either.
 - Copy in UK English, ops-manual register.

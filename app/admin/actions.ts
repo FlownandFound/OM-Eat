@@ -9,8 +9,10 @@ import { FIND_IMAGES_BUCKET } from "@/lib/images";
 // client, so RLS (not the service key) is the authority here — an
 // unauthenticated caller gets a database error, not a published Find.
 
-// The submission payload fields that map 1:1 onto finds columns. Anything
-// else in the payload (e.g. an update's `body`) never reaches the table.
+// The submission payload fields that copy straight across to finds columns.
+// cost_amount, cost_qty and crew_discount need a cast and are handled
+// separately in mapPayloadToFind. Anything else in the payload (e.g. an
+// update's `body`, or image_paths) never reaches the table.
 const FIND_FIELDS = [
   "destination_id",
   "dish",

@@ -22,10 +22,9 @@ function confirmedIds(): string[] {
   }
 }
 
-export function freshnessLine(
-  confirmCount: number,
-  lastConfirmedAt: string | null,
-) {
+// Exact wording is fixed by CLAUDE.md:
+// "Confirmed by 12 crew, last on 3 June 2026."
+function freshnessLine(confirmCount: number, lastConfirmedAt: string | null) {
   if (confirmCount < 1 || !lastConfirmedAt) {
     return "Awaiting first confirmation.";
   }
@@ -118,7 +117,7 @@ export function ConfirmControl({
         </button>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-sm text-red-700">
+        <p role="alert" className="mt-2 text-sm text-danger">
           {error}
         </p>
       )}

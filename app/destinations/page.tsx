@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/public";
-import { countryFlag } from "@/lib/flags";
+import { countryFlag } from "@/lib/countries";
 
 export const revalidate = 3600;
 

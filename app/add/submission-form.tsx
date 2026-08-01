@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { PhotoInput } from "./photo-input";
-import { countrySymbol } from "@/lib/currencies";
+import { countrySymbol } from "@/lib/countries";
 
 type Destination = {
   id: string;
@@ -317,7 +317,7 @@ export function SubmissionForm({
       </div>
 
       {error && (
-        <p role="alert" className="rounded border border-red-700 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="rounded border border-danger px-3 py-2 text-sm text-danger">
           {error}
         </p>
       )}
